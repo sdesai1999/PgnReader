@@ -123,7 +123,7 @@ public class PgnReader {
     }
 
     public static String[] separateRounds(String pgnGame) {
-        return pgnGame.split(" |\\\n"); // split the game on a space or newline
+        return pgnGame.split(" |\\\n"); // split on a space or newline
     }
 
     public static int determineMoveType(String move) {
