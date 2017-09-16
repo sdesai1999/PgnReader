@@ -41,15 +41,31 @@ public class PgnReader {
         String gameMovesOnly = game.substring(gameStartIndex);
         String[] movesArray = separateRounds(gameMovesOnly);
         int moveToPerform = -1;
+        boolean toContinue = true;
+        String whiteW = "1-0";
+        String blackW = "0-1";
+        String issaDraw = "1/2-1/2";
         for (int i = 0; i < movesArray.length; i++) {
-            if (i % 3 == 1) { // white move
+            String moveString = movesArray[i];
+            boolean isWhiteW = moveString.equals(whiteW);
+            boolean isBlackW = moveString.equals(blackW);
+            boolean isDraw = moveString.equals(issaDraw);
+            if ((i % 3 == 1) && toContinue) { // white move
                 moveToPerform = determineMoveType(movesArray[i]);
-                chessBoard = performMove(moveToPerform, 0, movesArray[i],
-                    chessBoard);
-            } else if (i % 3 == 2) { // black move
+                if (!isWhiteW && !isBlackW && !isDraw) {
+                    chessBoard = performMove(moveToPerform, 0, movesArray[i],
+                        chessBoard);
+                } else {
+                    toContinue = false;
+                }
+            } else if ((i % 3 == 2) && toContinue) { // black move
                 moveToPerform = determineMoveType(movesArray[i]);
-                chessBoard = performMove(moveToPerform, 1, movesArray[i],
+                if (!isWhiteW && !isBlackW && !isDraw) {
+                    chessBoard = performMove(moveToPerform, 1, movesArray[i],
                     chessBoard);
+                } else {
+                    toContinue = false;
+                }
             } else { // round number (1., 2., etc.)
                 moveToPerform = -1;
             }
@@ -138,7 +154,7 @@ public class PgnReader {
             return 1; // simple rook move
         } else if ((length == 4 && begSub.equals("R") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("R")
-            && secChar.equals("x"))) {
+                && secChar.equals("x"))) {
             return 2; // simple rook capture move
         } else if ((length >= 4 && !(isUpperCase(begSub)))) {
             return 3; // pawn capture move (both colors)
@@ -147,29 +163,35 @@ public class PgnReader {
             return 4; // simple bishop move
         } else if ((length == 4 && begSub.equals("B") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("B")
-            && secChar.equals("x"))) {
+                && secChar.equals("x"))) {
             return 5; // bishop capture move
         } else if ((length == 3 && begSub.equals("K"))
             || (tagIndexExists(move, 3) && begSub.equals("K"))) {
             return 6; // simple king move (can a king even have a plus?)
         } else if ((length == 4 && begSub.equals("K") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("K")
-            && secChar.equals("x"))) {
+                && secChar.equals("x"))) {
             return 7; // king capture move
         } else if ((length == 3 && begSub.equals("Q"))
             || (tagIndexExists(move, 3) && begSub.equals("Q"))) {
             return 8; // simple queen move
         } else if ((length == 4 && begSub.equals("Q") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("Q")
-            && secChar.equals("x"))) {
+                && secChar.equals("x"))) {
             return 9; // queen capture move
         } else if ((length == 3 && begSub.equals("N"))
             || (tagIndexExists(move, 3) && begSub.equals("N"))) {
             return 10; // simple knight move
         } else if ((length == 4 && begSub.equals("N") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("N")
-            && secChar.equals("x"))) {
+                && secChar.equals("x"))) {
             return 11; // knight capture move
+        } else if ((length == 3 && move.substring(0, 3).equals("O-O"))
+            || (length > 3 && move.substring(0, 3).equals("O-O")
+                && !(move.substring(3, 4).equals("-")))) {
+            return 12; // king-side castle
+        } else if (length >= 5 && move.substring(0, 5).equals("O-O-O")) {
+            return 13; // queen-side castle
         }
         return -1; // PLACEHOLDER, CHANGE LATER
     }
@@ -224,6 +246,14 @@ public class PgnReader {
             board = knightMove(move, board, 'N', true);
         } else if (moveType == 11 && color == 1) { // black knight capture
             board = knightMove(move, board, 'n', true);
+        } else if (moveType == 12 && color == 0) {
+            board = kingSideCastle(board, true);
+        } else if (moveType == 12 && color == 1) {
+            board = kingSideCastle(board, false);
+        } else if (moveType == 13 && color == 0) {
+            board = queenSideCastle(board, true);
+        } else if (moveType == 13 && color == 1) {
+            board = queenSideCastle(board, false);
         }
         return board;
     }
@@ -592,6 +622,36 @@ public class PgnReader {
         return board;
     }
 
+    public static char[][] kingSideCastle(char[][] board, boolean isWhite) {
+        if (isWhite) {
+            board[7][4] = ' ';
+            board[7][7] = ' ';
+            board[7][5] = 'R';
+            board[7][6] = 'K';
+        } else {
+            board[0][4] = ' ';
+            board[0][7] = ' ';
+            board[0][5] = 'r';
+            board[0][6] = 'k';
+        }
+        return board;
+    }
+
+    public static char[][] queenSideCastle(char[][] board, boolean isWhite) {
+        if (isWhite) {
+            board[7][0] = ' ';
+            board[7][4] = ' ';
+            board[7][3] = 'R';
+            board[7][2] = 'K';
+        } else {
+            board[0][0] = ' ';
+            board[0][4] = ' ';
+            board[0][3] = 'r';
+            board[0][2] = 'k';
+        }
+        return board;
+    }
+
     public static void printBoard(char[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
@@ -614,3 +674,8 @@ public class PgnReader {
         System.out.println(finalPosition(game));
     }
 }
+
+
+
+
+
