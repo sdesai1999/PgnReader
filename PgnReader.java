@@ -72,7 +72,8 @@ public class PgnReader {
         }
         System.out.println();
         printBoard(chessBoard); // need to replace this with algo to get FEN
-        return "";
+        System.out.println();
+        return getFEN(chessBoard);
     }
 
     /**
@@ -659,6 +660,30 @@ public class PgnReader {
             }
             System.out.println();
         }
+    }
+
+    public static String getFEN(char[][] board) {
+        int blankSpaceCounter = 0;
+        String fenString = "";
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (board[i][j] == ' ') {
+                    blankSpaceCounter++;
+                } else if (blankSpaceCounter > 0 && board[i][j] != ' ') {
+                    fenString += blankSpaceCounter;
+                    blankSpaceCounter = 0;
+                    fenString += board[i][j];
+                } else {
+                    fenString += board[i][j];
+                }
+            }
+            if (blankSpaceCounter > 0) {
+                fenString += blankSpaceCounter;
+            }
+            fenString += "/";
+            blankSpaceCounter = 0;
+        }
+        return fenString;
     }
 
     public static void main(String[] args) {
