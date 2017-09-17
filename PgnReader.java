@@ -680,11 +680,9 @@ public class PgnReader {
             if (blankSpaceCounter > 0) {
                 fenString += blankSpaceCounter;
             }
-
             if (i != (board.length - 1)) {
                 fenString += "/";
             }
-
             blankSpaceCounter = 0;
         }
         return fenString;
