@@ -37,37 +37,58 @@ public class PgnReader {
      */
     public static String finalPosition(String game) {
         char[][] chessBoard = initializeBoard();
-        int gameStartIndex = game.lastIndexOf("]") + 3;
-        String gameMovesOnly = game.substring(gameStartIndex);
-        String[] movesArray = separateRounds(gameMovesOnly);
-        int moveToPerform = -1;
-        boolean toContinue = true;
-        String whiteW = "1-0";
-        String blackW = "0-1";
-        String issaDraw = "1/2-1/2";
-        for (int i = 0; i < movesArray.length; i++) {
-            String moveString = movesArray[i];
-            boolean isWhiteW = moveString.equals(whiteW);
-            boolean isBlackW = moveString.equals(blackW);
-            boolean isDraw = moveString.equals(issaDraw);
-            if ((i % 3 == 1) && toContinue) { // white move
-                moveToPerform = determineMoveType(movesArray[i]);
-                if (!isWhiteW && !isBlackW && !isDraw) {
-                    chessBoard = performMove(moveToPerform, 0, movesArray[i],
-                        chessBoard);
-                } else {
-                    toContinue = false;
+        boolean gameExists = true;
+        int tempStartIndex = game.lastIndexOf("]");
+        int gameStartIndex = tempStartIndex + 3;
+        String tmpMovesOnly = "";
+        String gameMovesOnly = "";
+        if (tempStartIndex == -1) {
+            gameStartIndex = game.indexOf("1.");
+            if (gameStartIndex == -1) {
+                gameExists = false;
+            } else {
+                gameMovesOnly = game.substring(gameStartIndex);
+            }
+        } else {
+            tmpMovesOnly = game.substring(tempStartIndex);
+            int first1Index = tmpMovesOnly.indexOf("1.");
+            if (first1Index == -1) {
+                gameExists = false;
+            } else {
+                gameMovesOnly = tmpMovesOnly.substring(first1Index);
+            }
+        }
+        if (gameExists) {
+            String[] movesArray = separateRounds(gameMovesOnly);
+            int moveToPerform = -1;
+            boolean toContinue = true;
+            String whiteW = "1-0";
+            String blackW = "0-1";
+            String issaDraw = "1/2-1/2";
+            for (int i = 0; i < movesArray.length; i++) {
+                String moveString = movesArray[i];
+                boolean isWhiteW = moveString.equals(whiteW);
+                boolean isBlackW = moveString.equals(blackW);
+                boolean isDraw = moveString.equals(issaDraw);
+                if ((i % 3 == 1) && toContinue) { // white move
+                    moveToPerform = determineMoveType(movesArray[i]);
+                    if (!isWhiteW && !isBlackW && !isDraw) {
+                        chessBoard = performMove(moveToPerform, 0,
+                            movesArray[i], chessBoard);
+                    } else {
+                        toContinue = false;
+                    }
+                } else if ((i % 3 == 2) && toContinue) { // black move
+                    moveToPerform = determineMoveType(movesArray[i]);
+                    if (!isWhiteW && !isBlackW && !isDraw) {
+                        chessBoard = performMove(moveToPerform, 1,
+                            movesArray[i], chessBoard);
+                    } else {
+                        toContinue = false;
+                    }
+                } else { // round number (1., 2., etc.)
+                    moveToPerform = -1;
                 }
-            } else if ((i % 3 == 2) && toContinue) { // black move
-                moveToPerform = determineMoveType(movesArray[i]);
-                if (!isWhiteW && !isBlackW && !isDraw) {
-                    chessBoard = performMove(moveToPerform, 1, movesArray[i],
-                    chessBoard);
-                } else {
-                    toContinue = false;
-                }
-            } else { // round number (1., 2., etc.)
-                moveToPerform = -1;
             }
         }
         System.out.println();
@@ -155,7 +176,7 @@ public class PgnReader {
             return 1; // simple rook move
         } else if ((length == 4 && begSub.equals("R") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("R")
-                && secChar.equals("x"))) {
+            && secChar.equals("x"))) {
             return 2; // simple rook capture move
         } else if ((length >= 4 && !(isUpperCase(begSub)))) {
             return 3; // pawn capture move (both colors)
@@ -164,32 +185,32 @@ public class PgnReader {
             return 4; // simple bishop move
         } else if ((length == 4 && begSub.equals("B") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("B")
-                && secChar.equals("x"))) {
+            && secChar.equals("x"))) {
             return 5; // bishop capture move
         } else if ((length == 3 && begSub.equals("K"))
             || (tagIndexExists(move, 3) && begSub.equals("K"))) {
             return 6; // simple king move (can a king even have a plus?)
         } else if ((length == 4 && begSub.equals("K") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("K")
-                && secChar.equals("x"))) {
+            && secChar.equals("x"))) {
             return 7; // king capture move
         } else if ((length == 3 && begSub.equals("Q"))
             || (tagIndexExists(move, 3) && begSub.equals("Q"))) {
             return 8; // simple queen move
         } else if ((length == 4 && begSub.equals("Q") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("Q")
-                && secChar.equals("x"))) {
+            && secChar.equals("x"))) {
             return 9; // queen capture move
         } else if ((length == 3 && begSub.equals("N"))
             || (tagIndexExists(move, 3) && begSub.equals("N"))) {
             return 10; // simple knight move
         } else if ((length == 4 && begSub.equals("N") && secChar.equals("x"))
             || (tagIndexExists(move, 4) && begSub.equals("N")
-                && secChar.equals("x"))) {
+            && secChar.equals("x"))) {
             return 11; // knight capture move
         } else if ((length == 3 && move.substring(0, 3).equals("O-O"))
             || (length > 3 && move.substring(0, 3).equals("O-O")
-                && !(move.substring(3, 4).equals("-")))) {
+            && !(move.substring(3, 4).equals("-")))) {
             return 12; // king-side castle
         } else if (length >= 5 && move.substring(0, 5).equals("O-O-O")) {
             return 13; // queen-side castle
