@@ -268,13 +268,13 @@ public class PgnReader {
             board = knightMove(move, board, 'N', true);
         } else if (moveType == 11 && color == 1) { // black knight capture
             board = knightMove(move, board, 'n', true);
-        } else if (moveType == 12 && color == 0) {
+        } else if (moveType == 12 && color == 0) { // white king-side castle
             board = kingSideCastle(board, true);
-        } else if (moveType == 12 && color == 1) {
+        } else if (moveType == 12 && color == 1) { // black king-side castle
             board = kingSideCastle(board, false);
-        } else if (moveType == 13 && color == 0) {
+        } else if (moveType == 13 && color == 0) { // white queen-side castle
             board = queenSideCastle(board, true);
-        } else if (moveType == 13 && color == 1) {
+        } else if (moveType == 13 && color == 1) { // black queen-side castle
             board = queenSideCastle(board, false);
         }
         return board;
@@ -290,8 +290,10 @@ public class PgnReader {
         int qIndex = move.indexOf("?");
         int exIndex = move.indexOf("!");
         int plusIndex = move.indexOf("+");
+        int epIndex = move.indexOf("e.p.");
         if ((hashIndex == atIndex) || (qIndex == atIndex)
-            || (exIndex == atIndex) || (plusIndex == atIndex)) {
+            || (exIndex == atIndex) || (plusIndex == atIndex)
+            || (epIndex == atIndex)) {
             return true;
         }
         return false;
@@ -342,12 +344,17 @@ public class PgnReader {
         int row = getRow(tmpRow1);
         if (isWhite) {
             board[row + 1][startCol] = ' ';
+            if (board[row][endCol] == ' ') { // if en passant
+                board[row + 1][endCol] = ' ';
+            }
             board[row][endCol] = 'P';
         } else {
             board[row - 1][startCol] = ' ';
+            if (board[row][endCol] == ' ') { // if en passant
+                board[row - 1][endCol] = ' ';
+            }
             board[row][endCol] = 'p';
         }
-
         return board;
     }
 
