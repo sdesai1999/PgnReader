@@ -168,8 +168,11 @@ public class PgnReader {
         int length = move.length();
         String begSub = move.substring(0, 1);
         String secChar = move.substring(1, 2);
+        int indOfEquals = move.indexOf("="); // for pawn promotions
+        int indOfX = move.indexOf("x");
 
-        if (length == 2 || tagIndexExists(move, 2)) {
+        if ((length == 2 || tagIndexExists(move, 2))
+            || ((indOfEquals != -1 && indOfX == -1))) {
             return 0; // pawn move forward
         } else if ((length == 3 && begSub.equals("R"))
             || (tagIndexExists(move, 3) && begSub.equals("R"))) {
@@ -178,7 +181,8 @@ public class PgnReader {
             || (tagIndexExists(move, 4) && begSub.equals("R")
             && secChar.equals("x"))) {
             return 2; // simple rook capture move
-        } else if ((length >= 4 && !(isUpperCase(begSub)))) {
+        } else if ((length >= 4 && !(isUpperCase(begSub))
+            && indOfEquals == -1)) {
             return 3; // pawn capture move (both colors)
         } else if ((length == 3 && begSub.equals("B"))
             || (tagIndexExists(move, 3) && begSub.equals("B"))) {
@@ -312,7 +316,13 @@ public class PgnReader {
                 count++;
             }
         }
-        board[row][column] = 'P';
+        if (row == 0) {
+            int indOfEq = move.indexOf("=");
+            String tmpPiece = move.substring(indOfEq + 1, indOfEq + 2);
+            board[row][column] = tmpPiece.charAt(0);
+        } else {
+            board[row][column] = 'P';
+        }
         return board;
     }
 
@@ -329,7 +339,14 @@ public class PgnReader {
                 count++;
             }
         }
-        board[row][column] = 'p';
+        if (row == 7) {
+            int indOfEq = move.indexOf("=");
+            String tmpPiece1 = move.substring(indOfEq + 1, indOfEq + 2);
+            char tmpPiece = tmpPiece1.charAt(0);
+            board[row][column] = Character.toLowerCase(tmpPiece);
+        } else {
+            board[row][column] = 'p';
+        }
         return board;
     }
 
