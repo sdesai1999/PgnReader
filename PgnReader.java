@@ -181,8 +181,7 @@ public class PgnReader {
             || (tagIndexExists(move, 4) && begSub.equals("R")
             && secChar.equals("x"))) {
             return 2; // simple rook capture move
-        } else if ((length >= 4 && !(isUpperCase(begSub))
-            && indOfEquals == -1)) {
+        } else if ((length >= 4 && !(isUpperCase(begSub)))) {
             return 3; // pawn capture move (both colors)
         } else if ((length == 3 && begSub.equals("B"))
             || (tagIndexExists(move, 3) && begSub.equals("B"))) {
@@ -316,7 +315,7 @@ public class PgnReader {
                 count++;
             }
         }
-        if (row == 0) {
+        if (row == 0) { // checking for pawn promotion
             int indOfEq = move.indexOf("=");
             String tmpPiece = move.substring(indOfEq + 1, indOfEq + 2);
             board[row][column] = tmpPiece.charAt(0);
@@ -339,7 +338,7 @@ public class PgnReader {
                 count++;
             }
         }
-        if (row == 7) {
+        if (row == 7) { // checking for pawn promotion
             int indOfEq = move.indexOf("=");
             String tmpPiece1 = move.substring(indOfEq + 1, indOfEq + 2);
             char tmpPiece = tmpPiece1.charAt(0);
@@ -359,18 +358,30 @@ public class PgnReader {
         String tmpRow = move.substring(3, 4);
         int tmpRow1 = Integer.parseInt(tmpRow);
         int row = getRow(tmpRow1);
+        int indOfEq = move.indexOf("=");
         if (isWhite) {
             board[row + 1][startCol] = ' ';
-            if (board[row][endCol] == ' ') { // if en passant
-                board[row + 1][endCol] = ' ';
+            if (indOfEq != -1) { // check for pawn promotion
+                String tmpPiece = move.substring(indOfEq + 1, indOfEq + 2);
+                board[row][endCol] = tmpPiece.charAt(0);
+            } else {
+                if (board[row][endCol] == ' ') { // if en passant
+                    board[row + 1][endCol] = ' ';
+                }
+                board[row][endCol] = 'P';
             }
-            board[row][endCol] = 'P';
         } else {
             board[row - 1][startCol] = ' ';
-            if (board[row][endCol] == ' ') { // if en passant
-                board[row - 1][endCol] = ' ';
+            if (indOfEq != -1) { // check for pawn promotion
+                String tmpPiece1 = move.substring(indOfEq + 1, indOfEq + 2);
+                char tmpPiece = tmpPiece1.charAt(0);
+                board[row][endCol] = Character.toLowerCase(tmpPiece);
+            } else {
+                if (board[row][endCol] == ' ') { // if en passant
+                    board[row - 1][endCol] = ' ';
+                }
+                board[row][endCol] = 'p';
             }
-            board[row][endCol] = 'p';
         }
         return board;
     }
