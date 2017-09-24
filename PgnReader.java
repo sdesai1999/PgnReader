@@ -39,7 +39,7 @@ public class PgnReader {
         char[][] chessBoard = initializeBoard();
         boolean gameExists = true;
         int tempStartIndex = game.lastIndexOf("]");
-        int gameStartIndex = tempStartIndex + 3;
+        int gameStartIndex = -1;
         String tmpMovesOnly = "";
         String gameMovesOnly = "";
         if (tempStartIndex == -1) {
@@ -91,9 +91,9 @@ public class PgnReader {
                 }
             }
         }
-        System.out.println();
-        printBoard(chessBoard);
-        System.out.println();
+        //System.out.println();
+        //printBoard(chessBoard);
+        //System.out.println();
         return getFEN(chessBoard);
     }
 
@@ -160,21 +160,6 @@ public class PgnReader {
         return fileInt - 97;
     }
 
-    public static boolean isAFile(char ch) {
-        boolean a = (ch == 'a');
-        boolean b = (ch == 'b');
-        boolean c = (ch == 'c');
-        boolean d = (ch == 'd');
-        boolean e = (ch == 'e');
-        boolean f = (ch == 'f');
-        boolean g = (ch == 'g');
-        boolean h = (ch == 'h');
-        if (a || b || c || d || e || f || g || h) {
-            return true;
-        }
-        return false;
-    }
-
     public static String[] separateRounds(String pgnGame) {
         return pgnGame.split(" |\\\n"); // split on a space or newline
     }
@@ -195,25 +180,29 @@ public class PgnReader {
         } else if (length == 3 && piece.equals("R")) {
             return 1; // simple rook move
         } else if ((length >= 3 && !(isUpperCase(piece)))) {
-            return 3; // pawn capture move (both colors)
+            return 2; // pawn capture move (both colors)
         } else if (length == 3 && piece.equals("B")) {
-            return 4; // simple bishop move
+            return 3; // simple bishop move
         } else if (length == 3 && piece.equals("K")) {
-            return 6; // simple king move
+            return 4; // simple king move
         } else if (length == 3 && piece.equals("Q")) {
-            return 8; // simple queen move
+            return 5; // simple queen move
         } else if (length == 3 && piece.equals("N")) {
-            return 10; // simple knight move
+            return 6; // simple knight move
         } else if (length == 3 && move.equals("O-O")) {
-            return 12; // king-side castle
+            return 7; // king-side castle
         } else if (length == 5 && move.equals("O-O-O")) {
-            return 13; // queen-side castle
+            return 8; // queen-side castle
         } else if (length == 4 && piece.equals("R")) {
-            return 14; // disambiguating rook move
+            return 9; // disambiguating rook move
         } else if (length == 4 && piece.equals("N")) {
-            return 16; // disambiguation knight move
+            return 10; // disambiguating knight move
+        } else if (length == 4 && piece.equals("Q")) {
+            return 11; // disambiguating queen move
+        } else {
+            System.out.println("THIS SHOULDN'T HAPPEN");
+            return -1;
         }
-        return -1; // PLACEHOLDER, CHANGE LATER
     }
 
     public static char[][] performMove(int moveType, int color, String move,
@@ -232,38 +221,49 @@ public class PgnReader {
             board = rookMove(move, board, 'R');
         } else if (moveType == 1 && color == 1) { // black rook move
             board = rookMove(move, board, 'r');
-        } else if (moveType == 3 && color == 0) { // white pawn capture
+        } else if (moveType == 2 && color == 0) { // white pawn capture
             board = pawnCapture(move, board, true);
-        } else if (moveType == 3 && color == 1) { // black pawn capture
+        } else if (moveType == 2 && color == 1) { // black pawn capture
             board = pawnCapture(move, board, false);
-        } else if (moveType == 4 && color == 0) { // white bishop move
+        } else if (moveType == 3 && color == 0) { // white bishop move
             board = bishopMove(move, board, 'B');
-        } else if (moveType == 4 && color == 1) { // black bishop move
+        } else if (moveType == 3 && color == 1) { // black bishop move
             board = bishopMove(move, board, 'b');
-        } else if (moveType == 6 && color == 0) { // white king move
+        } else if (moveType == 4 && color == 0) { // white king move
             board = kingMove(move, board, 'K');
-        } else if (moveType == 6 && color == 1) { // black king move
+        } else if (moveType == 4 && color == 1) { // black king move
             board = kingMove(move, board, 'k');
-        } else if (moveType == 8 && color == 0) { // white queen move
+        } else if (moveType == 5 && color == 0) { // white queen move
             board = queenMove(move, board, 'Q');
-        } else if (moveType == 8 && color == 1) { // black queen move
+        } else if (moveType == 5 && color == 1) { // black queen move
             board = queenMove(move, board, 'q');
-        } else if (moveType == 10 && color == 0) { // white knight move
+        } else if (moveType == 6 && color == 0) { // white knight move
             board = knightMove(move, board, 'N');
-        } else if (moveType == 10 && color == 1) { // black knight move
+        } else if (moveType == 6 && color == 1) { // black knight move
             board = knightMove(move, board, 'n');
-        } else if (moveType == 12 && color == 0) { // white king-side castle
+        } else if (moveType == 7 && color == 0) { // white king-side castle
             board = kingSideCastle(board, true);
-        } else if (moveType == 12 && color == 1) { // black king-side castle
+        } else if (moveType == 7 && color == 1) { // black king-side castle
             board = kingSideCastle(board, false);
-        } else if (moveType == 13 && color == 0) { // white queen-side castle
+        } else if (moveType == 8 && color == 0) { // white queen-side castle
             board = queenSideCastle(board, true);
-        } else if (moveType == 13 && color == 1) { // black queen-side castle
+        } else if (moveType == 8 && color == 1) { // black queen-side castle
             board = queenSideCastle(board, false);
-        } else if (moveType == 14 && color == 0) { // white rook disamb. move
-            board = rookDisamMove(move, board, 'R');
-        } else if (moveType == 14 && color == 1) { // black rook disamb. move
-            board = rookDisamMove(move, board, 'r');
+        } else if (moveType == 9 && color == 0) { // white rook disamb. move
+            board = disamMove(move, board, 'R');
+        } else if (moveType == 9 && color == 1) { // black rook disamb. move
+            board = disamMove(move, board, 'r');
+        } else if (moveType == 10 && color == 0) { // white knight disamb move
+            board = disamMove(move, board, 'N');
+        } else if (moveType == 10 && color == 1) { // black knight disamb move
+            board = disamMove(move, board, 'n');
+        } else if (moveType == 11 && color == 0) { // white queen disamb move
+            board = disamMove(move, board, 'Q');
+        } else if (moveType == 11 && color == 1) { // black queen disamb move
+            board = disamMove(move, board, 'q');
+        } else {
+            System.out.println("THIS SHOULDN'T HAPPEN");
+            board = board;
         }
         return board;
     }
@@ -271,13 +271,6 @@ public class PgnReader {
     public static boolean isUpperCase(String a) {
         char b = a.charAt(0);
         return Character.isUpperCase(b);
-    }
-
-    public static boolean isPieceRNQ(String piece) {
-        if (piece.equals("R") || piece.equals("N") || piece.equals("Q")) {
-            return true;
-        }
-        return false;
     }
 
     public static char[][] whitePawnMove(String move, char[][] board) {
@@ -499,10 +492,10 @@ public class PgnReader {
         int tmpRow1 = Integer.parseInt(tmpRow);
         int row = getRow(tmpRow1);
         int count = 0; // so the loop exits once the correct N is found
-        String origCol1;
-        int origCol;
-        String origRow1;
-        int origRow;
+        String origCol1 = "";
+        int origCol = -1;
+        String origRow1 = "";
+        int origRow = -1;
         String[] knightOrigins = possibleKnightOrigins(column, row);
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
@@ -602,58 +595,6 @@ public class PgnReader {
         return board;
     }
 
-    public static char[][] rookDisamMove(String move, char[][] board,
-        char rook) {
-        String tmpCol = move.substring(2, 3);
-        String tmpRow = move.substring(3, 4);
-        int endColumn = getCol(tmpCol.charAt(0));
-        int tmpRow1 = Integer.parseInt(tmpRow);
-        int endRow = getRow(tmpRow1);
-        int count = 0; // so the loop exits once the correct R is found
-        String origColumnStr = "";
-        String origRowStr = "";
-        int origColumn = -1;
-        int origRow = -1;
-        if (Character.isDigit(move.substring(1, 2).charAt(0))) {
-            origRowStr = move.substring(1, 2);
-            int tmpOrigRow = Integer.parseInt(origRowStr);
-            origRow = getRow(tmpOrigRow);
-        } else {
-            origColumnStr = move.substring(1, 2);
-            origColumn = getCol(origColumnStr.charAt(0));
-        }
-
-        if (origColumn >= 0) {
-            for (int i = 0; i < board.length; i++) {
-                if (board[i][origColumn] == rook && endRow == i && count == 0) {
-                    board[i][origColumn] = ' ';
-                    count++;
-                } else if (board[i][origColumn] == rook
-                    && endColumn == origColumn
-                    && canMoveInColumn(origColumn, i, endRow, board)
-                    && count == 0) {
-                    board[i][origColumn] = ' ';
-                    count++;
-                }
-            }
-        } else {
-            for (int j = 0; j < board[origRow].length; j++) {
-                if (board[origRow][j] == rook && endColumn == j && count == 0) {
-                    board[origRow][j] = ' ';
-                    count++;
-                } else if (board[origRow][j] == rook && endRow == origRow
-                    && canMoveInRow(origRow, j, endColumn, board)
-                    && count == 0) {
-                    board[origRow][j] = ' ';
-                    count++;
-                }
-            }
-        }
-
-        board[endRow][endColumn] = rook;
-        return board;
-    }
-
     public static char[][] kingMove(String move, char[][] board, char king) {
         String tmpCol = move.substring(1, 2);
         String tmpRow = move.substring(2, 3);
@@ -698,6 +639,161 @@ public class PgnReader {
             board[0][3] = 'r';
             board[0][2] = 'k';
         }
+        return board;
+    }
+
+    public static char[][] disamMove(String move, char[][] board,
+        char piece) {
+        String tmpCol = move.substring(2, 3);
+        String tmpRow = move.substring(3, 4);
+        int endColumn = getCol(tmpCol.charAt(0));
+        int tmpRow1 = Integer.parseInt(tmpRow);
+        int endRow = getRow(tmpRow1);
+        String origColumnStr = "";
+        String origRowStr = "";
+        int origColumn = -1;
+        int origRow = -1;
+        if (Character.isDigit(move.substring(1, 2).charAt(0))) {
+            origRowStr = move.substring(1, 2);
+            int tmpOrigRow = Integer.parseInt(origRowStr);
+            origRow = getRow(tmpOrigRow);
+        } else {
+            origColumnStr = move.substring(1, 2);
+            origColumn = getCol(origColumnStr.charAt(0));
+        }
+
+        if (Character.toUpperCase(piece) == 'R') {
+            board = singleRookDisambig(origColumn, origRow, endColumn, endRow,
+                piece, board);
+        } else if (Character.toUpperCase(piece) == 'N') {
+            board = singleKnightDisambig(origColumn, origRow, endColumn, endRow,
+                piece, board);
+        } else {
+            board = singleQueenDisambig(origColumn, origRow, endColumn, endRow,
+                piece, board);
+        }
+        return board;
+    }
+
+    public static char[][] singleRookDisambig(int origCol, int origRow,
+        int endCol, int endRow, char rook, char[][] board) {
+        int count = 0; // so the loop exits once the correct R is found
+        if (origCol >= 0) {
+            for (int i = 0; i < board.length; i++) {
+                if (board[i][origCol] == rook && endRow == i && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                } else if (board[i][origCol] == rook
+                    && endCol == origCol
+                    && canMoveInColumn(origCol, i, endRow, board)
+                    && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                }
+            }
+        } else {
+            for (int j = 0; j < board[origRow].length; j++) {
+                if (board[origRow][j] == rook && endCol == j && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                } else if (board[origRow][j] == rook && endRow == origRow
+                    && canMoveInRow(origRow, j, endCol, board)
+                    && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                }
+            }
+        }
+
+        board[endRow][endCol] = rook;
+        return board;
+    }
+
+    public static char[][] singleKnightDisambig(int origCol, int origRow,
+        int endCol, int endRow, char knight, char[][] board) {
+        int count = 0;
+        String[] knightOrigins = possibleKnightOrigins(endCol, endRow);
+        if (origCol >= 0) {
+            String tmpOrigRow1 = "";
+            int tmpOrigRow = -1;
+            for (int i = 0; i < board.length; i++) {
+                if (board[i][origCol] == knight && count == 0) {
+                    for (int x = 0; x < knightOrigins.length; x++) {
+                        if (knightOrigins[x] != null) {
+                            tmpOrigRow1 = knightOrigins[x].substring(1, 2);
+                            tmpOrigRow = Integer.parseInt(tmpOrigRow1);
+                            if (i == tmpOrigRow) {
+                                board[i][origCol] = ' ';
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            String tmpOrigCol1 = "";
+            int tmpOrigCol = -1;
+            for (int j = 0; j < board[origRow].length; j++) {
+                if (board[origRow][j] == knight && count == 0) {
+                    for (int x = 0; x < knightOrigins.length; x++) {
+                        if (knightOrigins[x] != null) {
+                            tmpOrigCol1 = knightOrigins[x].substring(0, 1);
+                            tmpOrigCol = Integer.parseInt(tmpOrigCol1);
+                            if (j == tmpOrigCol) {
+                                board[origRow][j] = ' ';
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        board[endRow][endCol] = knight;
+        return board;
+    }
+
+    public static char[][] singleQueenDisambig(int origCol, int origRow,
+        int endCol, int endRow, char queen, char[][] board) {
+        int count = 0;
+        if (origCol >= 0) {
+            for (int i = 0; i < board.length; i++) {
+                if (board[i][origCol] == queen && endRow == i && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                } else if (board[i][origCol] == queen && endCol == origCol
+                    && canMoveInColumn(endCol, i, endRow, board)
+                    && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                } else if (board[i][origCol] == queen
+                    && isInDiagonal(origCol, endCol, i, endRow)
+                    && canMoveInDiagonal(origCol, endCol, i, endRow, board)
+                    && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                }
+            }
+        } else {
+            for (int j = 0; j < board[origRow].length; j++) {
+                if (board[origRow][j] == queen && endRow == origRow
+                    && canMoveInRow(endRow, j, endCol, board) && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                } else if (board[origRow][j] == queen && endCol == j
+                    && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                } else if (board[origRow][j] == queen
+                    && isInDiagonal(j, endCol, origRow, endRow)
+                    && canMoveInDiagonal(j, endCol, origRow, endRow, board)
+                    && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                }
+            }
+        }
+        board[endRow][endCol] = queen;
         return board;
     }
 
@@ -747,10 +843,6 @@ public class PgnReader {
         System.out.format("Result: %s%n", tagValue("Result", game));
         System.out.println("Final Position:");
         System.out.println(finalPosition(game));
+        System.out.println();
     }
 }
-
-
-
-
-
