@@ -85,6 +85,9 @@ public class PgnReader {
                 }
             }
         }
+        System.out.println();
+        printBoard(chessBoard);
+        System.out.println();
         return getFEN(chessBoard);
     }
 
@@ -184,11 +187,13 @@ public class PgnReader {
         } else if (length == 5 && move.equals("O-O-O")) {
             return 8; // queen-side castle
         } else if (length == 4 && piece.equals("R")) {
-            return 9; // disambiguating rook move
+            return 9; // disambiguating rook move (rank or file)
         } else if (length == 4 && piece.equals("N")) {
-            return 10; // disambiguating knight move
+            return 10; // disambiguating knight move (rank or file)
         } else if (length == 4 && piece.equals("Q")) {
-            return 11; // disambiguating queen move
+            return 11; // disambiguating queen move (rank or file)
+        } else if (length == 4 && piece.equals("B")) {
+            return 12; // disambiguating bishop move (rank or file)
         } else {
             System.out.println("THIS SHOULDN'T HAPPEN");
             return -1;
@@ -251,6 +256,10 @@ public class PgnReader {
             board = disamMove(move, board, 'Q');
         } else if (moveType == 11 && color == 1) { // black queen disambig move
             board = disamMove(move, board, 'q');
+        } else if (moveType == 12 && color == 0) {
+            board = disamMove(move, board, 'B');
+        } else if (moveType == 12 && color == 1) {
+            board = disamMove(move, board, 'b');
         } else {
             System.out.println("THIS SHOULDN'T HAPPEN");
             board = board;
@@ -541,6 +550,34 @@ public class PgnReader {
         return board;
     }
 
+    public static char[][] singleBishopDisambig(int origCol, int origRow,
+        int endCol, int endRow, char bishop, char[][] board) {
+        int count = 0;
+        if (origCol >= 0) { // check if disambiguating by file or rank
+            for (int i = 0; i < board.length; i++) {
+                if (board[i][origCol] == bishop
+                    && isInDiagonal(origCol, endCol, i, endRow)
+                    && canMoveInDiagonal(origCol, endCol, i, endRow, board)
+                    && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                }
+            }
+        } else {
+            for (int j = 0; j < board[origRow].length; j++) {
+                if (board[origRow][j] == bishop
+                    && isInDiagonal(j, endCol, origRow, endRow)
+                    && canMoveInDiagonal(j, endCol, origRow, endRow, board)
+                    && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                }
+            }
+        }
+        board[endRow][endCol] = bishop;
+        return board;
+    }
+
     public static char[][] rookMove(String move, char[][] board, char rook) {
         int column = getCol(move.substring(1, 2).charAt(0));
         int row = getRow(Integer.parseInt(move.substring(2, 3)));
@@ -624,16 +661,19 @@ public class PgnReader {
         } else if (Character.toUpperCase(piece) == 'N') {
             board = singleKnightDisambig(origColumn, origRow, endColumn, endRow,
                 piece, board);
-        } else {
+        } else if (Character.toUpperCase(piece) == 'Q') {
             board = singleQueenDisambig(origColumn, origRow, endColumn, endRow,
                 piece, board);
+        } else {
+            board = singleBishopDisambig(origColumn, origRow, endColumn,
+                endRow, piece, board);
         }
         return board;
     }
 
     public static char[][] singleRookDisambig(int origCol, int origRow,
         int endCol, int endRow, char rook, char[][] board) {
-        int count = 0; // so the loop exits once the correct R is found
+        int count = 0;
         if (origCol >= 0) { // check if disambiguating by file or rank
             for (int i = 0; i < board.length; i++) {
                 if (board[i][origCol] == rook && endRow == i && count == 0) {
@@ -777,6 +817,15 @@ public class PgnReader {
             emptySquareCounter = 0;
         }
         return fenString;
+    }
+
+    public static void printBoard(char[][] board) {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
 
     public static void main(String[] args) {
