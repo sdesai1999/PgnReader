@@ -194,6 +194,12 @@ public class PgnReader {
             return 11; // disambiguating queen move (rank or file)
         } else if (length == 4 && piece.equals("B")) {
             return 12; // disambiguating bishop move (rank or file)
+        } else if (length == 5 && piece.equals("N")) {
+            return 13; // disambiguating knight move (rank and file)
+        } else if (length == 5 && piece.equals("Q")) {
+            return 14; // disambiguating queen move (rank and file)
+        } else if (length == 5 && piece.equals("B")) {
+            return 15; // disambiguating bishop move (rank and file)
         } else {
             System.out.println("THIS SHOULDN'T HAPPEN");
             return -1;
@@ -256,10 +262,22 @@ public class PgnReader {
             board = disamMove(move, board, 'Q');
         } else if (moveType == 11 && color == 1) { // black queen disambig move
             board = disamMove(move, board, 'q');
-        } else if (moveType == 12 && color == 0) {
+        } else if (moveType == 12 && color == 0) { // white bishop disambig move
             board = disamMove(move, board, 'B');
-        } else if (moveType == 12 && color == 1) {
+        } else if (moveType == 12 && color == 1) { // black bishop disambig move
             board = disamMove(move, board, 'b');
+        } else if (moveType == 13 && color == 0) { // white knight 2 disambig
+            board = doubleDisamMove(move, board, 'N');
+        } else if (moveType == 13 && color == 1) { // black knight 2 disambig
+            board = doubleDisamMove(move, board, 'n');
+        } else if (moveType == 14 && color == 0) { // white queen 2 disambig
+            board = doubleDisamMove(move, board, 'Q');
+        } else if (moveType == 14 && color == 1) { // black queen 2 disambig
+            board = doubleDisamMove(move, board, 'q');
+        } else if (moveType == 15 && color == 0) { // white bishop 2 disambig
+            board = doubleDisamMove(move, board, 'B');
+        } else if (moveType == 15 && color == 1) { // black bishop 2 disambig
+            board = doubleDisamMove(move, board, 'b');
         } else {
             System.out.println("THIS SHOULDN'T HAPPEN");
             board = board;
@@ -550,34 +568,6 @@ public class PgnReader {
         return board;
     }
 
-    public static char[][] singleBishopDisambig(int origCol, int origRow,
-        int endCol, int endRow, char bishop, char[][] board) {
-        int count = 0;
-        if (origCol >= 0) { // check if disambiguating by file or rank
-            for (int i = 0; i < board.length; i++) {
-                if (board[i][origCol] == bishop
-                    && isInDiagonal(origCol, endCol, i, endRow)
-                    && canMoveInDiagonal(origCol, endCol, i, endRow, board)
-                    && count == 0) {
-                    board[i][origCol] = ' ';
-                    count++;
-                }
-            }
-        } else {
-            for (int j = 0; j < board[origRow].length; j++) {
-                if (board[origRow][j] == bishop
-                    && isInDiagonal(j, endCol, origRow, endRow)
-                    && canMoveInDiagonal(j, endCol, origRow, endRow, board)
-                    && count == 0) {
-                    board[origRow][j] = ' ';
-                    count++;
-                }
-            }
-        }
-        board[endRow][endCol] = bishop;
-        return board;
-    }
-
     public static char[][] rookMove(String move, char[][] board, char rook) {
         int column = getCol(move.substring(1, 2).charAt(0));
         int row = getRow(Integer.parseInt(move.substring(2, 3)));
@@ -749,6 +739,34 @@ public class PgnReader {
         return board;
     }
 
+    public static char[][] singleBishopDisambig(int origCol, int origRow,
+        int endCol, int endRow, char bishop, char[][] board) {
+        int count = 0;
+        if (origCol >= 0) { // check if disambiguating by file or rank
+            for (int i = 0; i < board.length; i++) {
+                if (board[i][origCol] == bishop
+                    && isInDiagonal(origCol, endCol, i, endRow)
+                    && canMoveInDiagonal(origCol, endCol, i, endRow, board)
+                    && count == 0) {
+                    board[i][origCol] = ' ';
+                    count++;
+                }
+            }
+        } else {
+            for (int j = 0; j < board[origRow].length; j++) {
+                if (board[origRow][j] == bishop
+                    && isInDiagonal(j, endCol, origRow, endRow)
+                    && canMoveInDiagonal(j, endCol, origRow, endRow, board)
+                    && count == 0) {
+                    board[origRow][j] = ' ';
+                    count++;
+                }
+            }
+        }
+        board[endRow][endCol] = bishop;
+        return board;
+    }
+
     public static char[][] singleQueenDisambig(int origCol, int origRow,
         int endCol, int endRow, char queen, char[][] board) {
         int count = 0;
@@ -790,6 +808,17 @@ public class PgnReader {
             }
         }
         board[endRow][endCol] = queen;
+        return board;
+    }
+
+    public static char[][] doubleDisamMove(String move, char[][] board,
+        char piece) {
+        int origCol = getCol(move.substring(1, 2).charAt(0));
+        int origRow = getRow(Integer.parseInt(move.substring(2, 3)));
+        int endCol = getCol(move.substring(3, 4).charAt(0));
+        int endRow = getRow(Integer.parseInt(move.substring(4, 5)));
+        board[origRow][origCol] = ' ';
+        board[endRow][endCol] = piece;
         return board;
     }
 
