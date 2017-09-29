@@ -85,9 +85,9 @@ public class PgnReader {
                 }
             }
         }
-        System.out.println();
-        printBoard(chessBoard);
-        System.out.println();
+        // System.out.println();
+        // printBoard(chessBoard);
+        // System.out.println();
         return getFEN(chessBoard);
     }
 
