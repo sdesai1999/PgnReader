@@ -32,7 +32,7 @@ public class PgnReader {
      *
      * @see http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm#c16.1
      *
-     * @param game a `Strring` containing a PGN-formatted chess game or opening
+     * @param game a `String` containing a PGN-formatted chess game or opening
      * @return the game's final position in FEN.
      */
     public static String finalPosition(String game) {
@@ -85,9 +85,6 @@ public class PgnReader {
                 }
             }
         }
-        // System.out.println();
-        // printBoard(chessBoard);
-        // System.out.println();
         return getFEN(chessBoard);
     }
 
@@ -342,7 +339,7 @@ public class PgnReader {
                 String tmpPiece = move.substring(indOfEq + 1, indOfEq + 2);
                 board[row][endCol] = tmpPiece.charAt(0);
             } else {
-                if (board[row][endCol] == ' ') { // if en passant
+                if (board[row][endCol] == ' ') { // check for en passant
                     board[row + 1][endCol] = ' ';
                 }
                 board[row][endCol] = 'P';
@@ -354,7 +351,7 @@ public class PgnReader {
                 char tmpPiece = tmpPiece1.charAt(0);
                 board[row][endCol] = Character.toLowerCase(tmpPiece);
             } else {
-                if (board[row][endCol] == ' ') { // if en passant
+                if (board[row][endCol] == ' ') { // check for en passant
                     board[row - 1][endCol] = ' ';
                 }
                 board[row][endCol] = 'p';
@@ -635,6 +632,7 @@ public class PgnReader {
 
     public static char[][] disamMove(String move, char[][] board,
         char piece) {
+        // if move is something like Q6e5 or Qde5
         int endColumn = getCol(move.substring(2, 3).charAt(0));
         int endRow = getRow(Integer.parseInt(move.substring(3, 4)));
         String origColumnStr = "", origRowStr = "";
@@ -813,6 +811,7 @@ public class PgnReader {
 
     public static char[][] doubleDisamMove(String move, char[][] board,
         char piece) {
+        // if move looks something like Qd6e5
         int origCol = getCol(move.substring(1, 2).charAt(0));
         int origRow = getRow(Integer.parseInt(move.substring(2, 3)));
         int endCol = getCol(move.substring(3, 4).charAt(0));
@@ -846,15 +845,6 @@ public class PgnReader {
             emptySquareCounter = 0;
         }
         return fenString;
-    }
-
-    public static void printBoard(char[][] board) {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
     }
 
     public static void main(String[] args) {
